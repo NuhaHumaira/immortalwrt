@@ -1,0 +1,27 @@
+name: List Files in Specific Commit
+
+on:
+  workflow_dispatch:   # manual trigger
+
+jobs:
+  list-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need full history
+
+      - name: Collect changed files for specific commit
+        run: |
+          COMMIT_SHA=40a7f22a2d1070cf2a5e7d0f1639fb191cb3af01
+          echo "Files Added or Modified in commit $COMMIT_SHA:" > changed_files.txt
+          git diff-tree --no-commit-id --name-only -r --diff-filter=AM $COMMIT_SHA \
+            | grep -v '^\.github/workflows/' >> changed_files.txt
+          cat changed_files.txt
+
+      - name: Upload changed_files.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: changed-files
+          path: changed_files.txt
