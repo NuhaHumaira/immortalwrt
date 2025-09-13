@@ -1,0 +1,28 @@
+name: List Changed Files
+
+on:
+  workflow_dispatch:   # manual trigger
+  push:
+    branches:
+      - main           # adjust to your branch
+
+jobs:
+  list-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need full history for git diff
+
+      - name: Collect changed files
+        run: |
+          echo "Files Added or Modified in commit ${{ github.sha }}:" > changed_files.txt
+          git diff-tree --no-commit-id --name-only -r --diff-filter=AM ${{ github.sha }} >> changed_files.txt
+          cat changed_files.txt
+
+      - name: Upload changed_files.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: changed-files
+          path: changed_files.txt
